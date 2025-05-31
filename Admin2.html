@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LakshyaPU - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #004f9f;
+            --primary-light: #3a7bbd;
+            --secondary: #00c8ff;
+            --accent: #ff5e7d;
+            --dark: #1a1a2e;
+            --light: #f8f9ff;
+            --gray: #e2e8f0;
+            --text: #2d3748;
+            --text-light: #718096;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            --accent-color: var(--accent);
+            --gradient-blue: linear-gradient(135deg, #1a2980, #26d0ce);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-header {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 2rem 1rem;
+            width: 100%;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 10;
+        }
+        
+        .logo-image {
+            width: 48px;
+            height: auto;
+            transition: var(--transition);
+            animation: float 4s ease-in-out infinite;
+            will-change: transform;
+        }
+        
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .user-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent) 0%, #ff8a5c 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+        .profile-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            padding: 1rem;
+            min-width: 180px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out, visibility 0.3s ease-out;
+            z-index: 9;
+        }
+
+        .profile-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .profile-dropdown p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 0.75rem;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        .profile-dropdown button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(45deg, var(--accent), #ff8a5c);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            box-shadow: var(--shadow-sm);
+            will-change: transform, box-shadow;
+        }
+
+        .profile-dropdown button:hover {
+            background: linear-gradient(45deg, #ff8a5c, var(--accent));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 94, 125, 0.3);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            max-width: 900px;
+            margin: 0 auto 4rem;
+            padding: 0 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            animation: scaleIn 0.6s ease-out forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="number"],
+        .form-group select,
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--gray);
+            font-size: 1rem;
+            color: var(--dark);
+            background-color: #fcfdff;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group input[type="file"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 79, 159, 0.2);
+        }
+
+        .form-group select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23718096%22%20d%3D%22M287%2C197.3L159.2%2C69.5c-3.6-3.6-8.6-5.4-13.7-5.4s-10.1%2C1.8-13.7%2C5.4L5.4%2C197.3c-7.2%2C7.2-7.2%2C18.8%2C0%2C26c3.6%2C3.6%2C8.6%2C5.4%2C13.7%2C5.4s10.1-1.8%2C13.7-5.4l116.9-116.9l116.9%2C116.9c3.6%2C3.6%2C8.6%2C5.4%2C13.7%2C5.4s10.1-1.8%2C13.7-5.4C294.2%2C216.1%2C294.2%2C204.5%2C287%2C197.3z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 12px;
+            padding-right: 35px;
+        }
+
+        .subject-entry {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px dashed var(--gray);
+            border-radius: 10px;
+            background-color: #fcfdff;
+            align-items: center;
+        }
+        .subject-entry input, .subject-entry select {
+            flex: 1 1 calc(33% - 1rem);
+            min-width: 120px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        .subject-entry .remove-subject-btn {
+            flex-shrink: 0;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .subject-entry .remove-subject-btn:hover {
+            background-color: #d63031;
+            transform: scale(1.05);
+        }
+
+        #addSubjectBtn {
+            display: block;
+            width: fit-content;
+            margin: 1.5rem auto 2rem;
+            padding: 10px 20px;
+            background: linear-gradient(to right, var(--primary-light), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+        #addSubjectBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 200, 255, 0.3);
+        }
+
+        .button-container {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .auth-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            border: none;
+            color: white;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 79, 159, 0.3);
+        }
+
+        .auth-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 79, 159, 0.4);
+        }
+
+        .auth-button:active {
+            transform: translateY(0);
+        }
+
+        .auth-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0.3) 0%,
+                rgba(255, 255, 255, 0) 60%
+            );
+            transform: rotate(30deg);
+            transition: all 0.5s;
+        }
+
+        .auth-button:hover::after {
+            transform: rotate(30deg) translate(20%, 20%);
+        }
+
+        .spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .button-text {
+            display: inline-block;
+        }
+
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10000;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        @keyframes slideDown {
+            from { top: -50px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 15px;
+        }
+        #loading-overlay p {
+            color: var(--primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        #admin-login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: var(--gradient-blue);
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px 30px;
+            text-align: center;
+            animation: fadeInUp 0.5s forwards;
+        }
+        .login-card h2 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: var(--primary);
+            position: relative;
+        }
+        .login-card h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+        .login-card .form-group {
+            margin-bottom: 20px;
+        }
+        .login-card .auth-button {
+            margin-top: 20px;
+        }
+
+        #admin-dashboard {
+            display: none;
+        }
+
+        .separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 2rem 0;
+            color: var(--text-light);
+        }
+        .separator::before,
+        .separator::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--gray);
+        }
+        .separator:not(:empty)::before {
+            margin-right: .5em;
+        }
+        .separator:not(:empty)::after {
+            margin-left: .5em;
+        }
+
+        @media (max-width: 768px) {
+            .app-header {
+                padding: 1.5rem;
+            }
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .logo {
+                margin-bottom: 1rem;
+            }
+            .section-title {
+                font-size: 1.8rem;
+            }
+            .admin-card {
+                padding: 1.5rem;
+            }
+            .subject-entry input, .subject-entry select {
+                flex: 1 1 100%;
+                min-width: unset;
+            }
+            .subject-entry .remove-subject-btn {
+                margin-left: auto;
+            }
+            .login-card {
+                padding: 30px 20px;
+            }
+            .login-card h2 {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-header {
+                padding: 1rem;
+            }
+            .logo-text {
+                font-size: 1.5rem;
+            }
+            .main-content {
+                padding: 0 1rem;
+            }
+            .section-title {
+                font-size: 1.5rem;
+            }
+            .admin-card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p id="loading-message">Loading...</p>
+    </div>
+
+    <div id="message-box" class="message-box"></div>
+
+    <div id="admin-login-page">
+        <div class="login-card">
+            <h2>Admin Login</h2>
+            <div class="form-group">
+                <label for="admin-email">Email</label>
+                <input type="email" id="admin-email" placeholder="Admin Email" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="admin-password">Password</label>
+                <input type="password" id="admin-password" placeholder="Password" autocomplete="current-password">
+            </div>
+            <button id="admin-login-btn" class="auth-button">
+                <span class="button-text">Login as Admin</span>
+                <div class="spinner"></div>
+            </button>
+            <div id="admin-login-message" class="message"></div>
+        </div>
+    </div>
+
+    <div id="admin-dashboard">
+        <div class="app-header">
+            <header>
+                <a href="admin.html" class="logo">
+                    <img src="file_000000006c94623091a45ef564bf352a.png" alt="LakshyaPU Logo" class="logo-image">
+                    <div class="logo-text">LAKSHYAPU</div>
+                </a>
+                <div class="user-profile">
+                    <div class="user-icon" id="adminUserIcon">AD</div>
+                    <div class="profile-dropdown" id="adminProfileDropdown">
+                        <p id="adminDropdownEmail">Admin Email</p>
+                        <button id="adminLogoutButton">Logout</button>
+                    </div>
+                </div>
+            </header>
+        </div>
+
+        <div class="main-content">
+            <h1 class="section-title">Upload Student Results</h1>
+
+            <div class="admin-card">
+                <h2>Manual Entry</h2>
+                <div class="form-group">
+                    <label for="studentSymbolInput">Student Roll Number</label>
+                    <input type="text" id="studentSymbolInput" placeholder="Enter Student Roll Number (e.g., 20200001)" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="semesterSelect">Semester</label>
+                    <select id="semesterSelect" required>
+                        <option value="">Select Semester</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="gpaInput">Overall GPA (e.g., 3.75)</label>
+                    <input type="number" id="gpaInput" step="0.01" min="0" max="4" placeholder="Enter GPA" required>
+                </div>
+
+                <h3>Subjects</h3>
+                <div id="subjectsContainer"></div>
+                <button type="button" id="addSubjectBtn"><i class="fas fa-plus"></i> Add Subject</button>
+
+                <div class="button-container">
+                    <button id="saveResultsBtn" class="auth-button">
+                        <span class="button-text">Save Results</span>
+                        <div class="spinner"></div>
+                    </button>
+                </div>
+
+                <div class="separator">OR</div>
+
+                <h2>Upload via Excel</h2>
+                <p style="font-size: 0.9em; color: var(--text-light); margin-bottom: 1rem;">
+                    Upload an Excel file (.xlsx, .xls) containing results for multiple students/semesters.
+                    <br>
+                    <a href="BBA 1st Semester 2022 fall.xlsx" download style="color: var(--primary); text-decoration: underline;">Download Sample Excel Template</a>
+                </p>
+                <div class="form-group">
+                    <label for="excelFileInput">Select Excel File (Max 5MB)</label>
+                    <input type="file" id="excelFileInput" accept=".csv, .xlsx, .xls" required>
+                </div>
+                <div class="button-container">
+                    <button id="uploadExcelBtn" class="auth-button">
+                        <span class="button-text">Upload Excel File</span>
+                        <div class="spinner"></div>
+                    </button>
+                </div>
+                <div id="excel-upload-message" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBd17QRq64vev4-wzOB5fwuXGY7o8FGH84", //
+            authDomain: "appp-f6da8.firebaseapp.com", //
+            databaseURL: "https://appp-f6da8-default-rtdb.firebaseio.com", //
+            projectId: "appp-f6da8", //
+            storageBucket: "appp-f6da8.firebasestorage.app", //
+            messagingSenderId: "421867158700", //
+            appId: "1:421867158700:web:28d8c84fbb8e96f4d13309", //
+            measurementId: "G-CXRPVBHBQT" //
+        };
+        
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig); //
+        const auth = firebase.auth(); //
+        const db = firebase.database(); //
+
+        // DOM Elements
+        const adminLoginPage = document.getElementById('admin-login-page');
+        const adminDashboard = document.getElementById('admin-dashboard');
+        const adminEmailInput = document.getElementById('admin-email');
+        const adminPasswordInput = document.getElementById('admin-password');
+        const adminLoginBtn = document.getElementById('admin-login-btn');
+        const adminLoginMessage = document.getElementById('admin-login-message');
+        const adminUserIcon = document.getElementById('adminUserIcon');
+        const adminProfileDropdown = document.getElementById('adminProfileDropdown');
+        const adminDropdownEmail = document.getElementById('adminDropdownEmail');
+        const adminLogoutButton = document.getElementById('adminLogoutButton');
+
+        const studentSymbolInput = document.getElementById('studentSymbolInput');
+        const semesterSelect = document.getElementById('semesterSelect');
+        const gpaInput = document.getElementById('gpaInput');
+        const subjectsContainer = document.getElementById('subjectsContainer');
+        const addSubjectBtn = document.getElementById('addSubjectBtn');
+        const saveResultsBtn = document.getElementById('saveResultsBtn');
+
+        const excelFileInput = document.getElementById('excelFileInput');
+        const uploadExcelBtn = document.getElementById('uploadExcelBtn');
+        const excelUploadMessage = document.getElementById('excel-upload-message');
+
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingMessage = document.getElementById('loading-message');
+        const messageBox = document.getElementById('message-box');
+
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+        function showMessageBox(message, isSuccess, targetElementId = 'message-box') {
+            const targetElement = document.getElementById(targetElementId);
+            if (targetElementId === 'message-box') {
+                targetElement.textContent = message;
+                targetElement.className = `message-box ${isSuccess ? 'success' : 'error'}`;
+                targetElement.style.display = 'block';
+                setTimeout(() => {
+                    targetElement.style.display = 'none';
+                }, 5000);
+            } else {
+                targetElement.textContent = message;
+                targetElement.className = `message ${isSuccess ? 'success' : 'error'}`;
+                targetElement.style.display = 'block';
+                setTimeout(() => {
+                    targetElement.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function setLoading(show, message = 'Loading...') {
+            loadingOverlay.style.display = show ? 'flex' : 'none';
+            loadingMessage.textContent = message;
+        }
+
+        function setButtonLoading(button, isLoading) {
+            const spinner = button.querySelector('.spinner');
+            const buttonText = button.querySelector('.button-text');
+            button.disabled = isLoading;
+            if (isLoading) {
+                buttonText.style.opacity = '0.5';
+                spinner.style.display = 'block';
+            } else {
+                buttonText.style.opacity = '1';
+                spinner.style.display = 'none';
+            }
+        }
+
+        function getOrdinalSuffix(n) {
+            const s = ["th", "st", "nd", "rd"];
+            const v = n % 100;
+            return (s[(v - 20) % 10] || s[v] || s[0]);
+        }
+
+        function formatSemester(semesterName) {
+            const match = semesterName.match(/(\d+)(st|nd|rd|th)/i);
+            if (match) {
+                return `semester${match[1]}`;
+            }
+            // Fallback for cases like "1st Semester" or "First Semester"
+            const lowerCaseName = semesterName.toLowerCase();
+            if (lowerCaseName.includes("1st")) return "semester1";
+            if (lowerCaseName.includes("2nd")) return "semester2";
+            if (lowerCaseName.includes("3rd")) return "semester3";
+            if (lowerCaseName.includes("4th")) return "semester4";
+            if (lowerCaseName.includes("5th")) return "semester5";
+            if (lowerCaseName.includes("6th")) return "semester6";
+            if (lowerCaseName.includes("7th")) return "semester7";
+            if (lowerCaseName.includes("8th")) return "semester8";
+            
+            // If no clear number is found, use a sanitized version
+            return lowerCaseName.replace(/[^a-z0-9]/g, ''); // Removes non-alphanumeric
+        }
+
+        function addSubjectRow() {
+            const subjectEntryDiv = document.createElement('div');
+            subjectEntryDiv.className = 'subject-entry';
+            subjectEntryDiv.innerHTML = `
+                <input type="text" class="subject-code" placeholder="Subject Code" required>
+                <input type="text" class="subject-name" placeholder="Subject Name" required>
+                <input type="text" class="subject-grade" placeholder="Grade (A, F, Abs)" required>
+                <button type="button" class="remove-subject-btn"><i class="fas fa-times"></i></button>
+            `;
+            subjectsContainer.appendChild(subjectEntryDiv);
+
+            subjectEntryDiv.querySelector('.remove-subject-btn').addEventListener('click', () => {
+                subjectEntryDiv.remove();
+            });
+        }
+
+        // Populate semester dropdown
+        document.addEventListener('DOMContentLoaded', () => {
+            for (let i = 1; i <= 8; i++) {
+                const option = document.createElement('option');
+                option.value = `${i}${getOrdinalSuffix(i)} Semester`;
+                option.textContent = `${i}${getOrdinalSuffix(i)} Semester`;
+                semesterSelect.appendChild(option);
+            }
+            addSubjectRow();
+        });
+
+        // Admin Login
+        adminLoginBtn.addEventListener('click', async () => {
+            const email = adminEmailInput.value.trim();
+            const password = adminPasswordInput.value;
+
+            if (!email || !password) {
+                showMessageBox('Please enter both email and password.', false, 'admin-login-message');
+                return;
+            }
+
+            setButtonLoading(adminLoginBtn, true);
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                const adminRef = db.ref(`admins/${user.uid}`);
+                const adminSnapshot = await adminRef.once('value');
+
+                if (adminSnapshot.exists()) {
+                    showMessageBox('Admin login successful!', true, 'admin-login-message');
+                    adminLoginPage.style.display = 'none';
+                    adminDashboard.style.display = 'flex';
+                    adminUserIcon.textContent = user.email ? user.email.charAt(0).toUpperCase() : 'AD';
+                    adminDropdownEmail.textContent = user.email || 'Admin';
+                } else {
+                    await auth.signOut();
+                    showMessageBox('Access Denied: You are not an authorized admin.', false, 'admin-login-message');
+                }
+            } catch (error) {
+                let errorMessage = 'Login failed. Invalid credentials or network error.';
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errorMessage = 'Invalid email or password.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'Too many login attempts. Please try again later.';
+                }
+                showMessageBox(errorMessage, false, 'admin-login-message');
+            } finally {
+                setButtonLoading(adminLoginBtn, false);
+            }
+        });
+
+        // Admin Logout
+        adminLogoutButton.addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+                adminDashboard.style.display = 'none';
+                adminLoginPage.style.display = 'flex';
+                adminEmailInput.value = '';
+                adminPasswordInput.value = '';
+                showMessageBox('Logged out successfully.', true, 'admin-login-message');
+            } catch (error) {
+                console.error('Admin logout error:', error);
+                showMessageBox('Logout failed. Please try again.', false);
+            }
+        });
+
+        // Toggle Admin Profile Dropdown
+        adminUserIcon.addEventListener('click', (event) => {
+            event.stopPropagation();
+            adminProfileDropdown.classList.toggle('show');
+        });
+        document.addEventListener('click', (event) => {
+            if (!adminUserIcon.contains(event.target) && !adminProfileDropdown.contains(event.target)) {
+                adminProfileDropdown.classList.remove('show');
+            }
+        });
+
+        // Add Subject Button
+        addSubjectBtn.addEventListener('click', addSubjectRow);
+
+        // Save Results Button (Manual Entry)
+        saveResultsBtn.addEventListener('click', async () => {
+            const studentRollNo = studentSymbolInput.value.trim();
+
+            if (!studentRollNo || studentRollNo.length !== 8 || isNaN(studentRollNo)) {
+                showMessageBox('Please enter a valid 8-digit Student Roll Number.', false);
+                return;
+            }
+
+            const semester = semesterSelect.value.trim(); // Get raw value from select
+            const formattedSemester = formatSemester(semester); // Format it
+            const gpa = gpaInput.value.trim();
+
+            if (!semester) {
+                showMessageBox('Please select a semester.', false);
+                return;
+            }
+            if (!gpa || isNaN(parseFloat(gpa)) || parseFloat(gpa) < 0 || parseFloat(gpa) > 4) {
+                showMessageBox('Please enter a valid GPA between 0 and 4.', false);
+                return;
+            }
+
+            const subjects = {};
+            let allSubjectsValid = true;
+            let subjectIndex = 0;
+
+            document.querySelectorAll('.subject-entry').forEach((entry) => {
+                const subjectCode = entry.querySelector('.subject-code').value.trim();
+                const subjectName = entry.querySelector('.subject-name').value.trim();
+                const grade = entry.querySelector('.subject-grade').value.trim();
+
+                if (subjectCode && subjectName && grade) {
+                    subjects[subjectIndex] = {
+                        subjectCode: subjectCode,
+                        subjectName: subjectName,
+                        grade: grade
+                    };
+                    subjectIndex++;
+                } else if (subjectCode || subjectName || grade) { // If any part is filled, but not all
+                    allSubjectsValid = false;
+                }
+            });
+
+            if (!allSubjectsValid) {
+                showMessageBox('Please fill in all subject fields or remove empty rows.', false);
+                return;
+            }
+            if (Object.keys(subjects).length === 0) {
+                showMessageBox('Please add at least one subject result.', false);
+                return;
+            }
+
+            setButtonLoading(saveResultsBtn, true);
+            setLoading(true, 'Saving results to database...');
+
+            try {
+                const resultData = {
+                    gpa: gpa,
+                    subjects: subjects,
+                    timestamp: new Date().toISOString()
+                };
+
+                const ref = db.ref(`results/${studentRollNo}/${formattedSemester}`); // Use formattedSemester
+                await ref.set(resultData);
+
+                showMessageBox('Results saved successfully!', true);
+                studentSymbolInput.value = '';
+                semesterSelect.value = '';
+                gpaInput.value = '';
+                subjectsContainer.innerHTML = '';
+                addSubjectRow(); // Add a new empty row for next entry
+
+            } catch (error) {
+                console.error("Error saving results:", error);
+                showMessageBox('Failed to save results: ' + error.message, false);
+            } finally {
+                setButtonLoading(saveResultsBtn, false);
+                setLoading(false);
+            }
+        });
+
+        // Excel Upload Button
+        uploadExcelBtn.addEventListener('click', async () => {
+            const file = excelFileInput.files[0];
+            
+            if (!file) {
+                showMessageBox("Please select an Excel file.", false, 'excel-upload-message');
+                return;
+            }
+
+            if (file.size > MAX_FILE_SIZE) {
+                showMessageBox(`File too large! Maximum 5MB allowed. Current size: ${(file.size / (1024 * 1024)).toFixed(2)} MB`, false, 'excel-upload-message');
+                return;
+            }
+
+            const allowedTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel', 'text/csv'];
+            if (!allowedTypes.includes(file.type)) {
+                showMessageBox('Please upload a valid Excel (.xlsx, .xls) or CSV (.csv) file.', false, 'excel-upload-message');
+                return;
+            }
+
+            setButtonLoading(uploadExcelBtn, true);
+            setLoading(true, 'Processing Excel file...');
+
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                    console.log("Full JSON data from Excel:", jsonData); //
+
+                    // Extract semester and format it
+                    const semesterCell = jsonData[0]?.[0]?.toString().trim(); //
+                    const semester = formatSemester(semesterCell || "semester1"); //
+                    console.log(`Detected Semester: "${semesterCell}" -> Formatted as: "${semester}"`); //
+
+                    // Get subject headers
+                    const subjectCodes = jsonData[1] || []; //
+                    const subjectNames = jsonData[2] || []; //
+                    
+                    console.log("Raw Subject Codes row:", subjectCodes); //
+                    console.log("Raw Subject Names row:", subjectNames); //
+
+                    // Determine subject columns
+                    const subjectCodeList = subjectCodes.slice(1, -1); //
+                    const subjectNameList = subjectNames.slice(1, -1); //
+                    const totalSubjectsInHeaders = subjectCodeList.length; //
+
+                    console.log("Extracted Subject Code List (should be 5):", subjectCodeList); //
+                    console.log("Extracted Subject Name List (should be 5):", subjectNameList); //
+                    console.log("Total subjects identified in headers:", totalSubjectsInHeaders); //
+
+
+                    let processedCount = 0;
+                    let errorCount = 0;
+                    const promises = [];
+
+                    // Process each student row (starting from index 3 based on your Excel structure)
+                    for (let i = 3; i < jsonData.length; i++) { //
+                        const row = jsonData[i]; //
+                        if (!row || row.length < 2) { //
+                            console.warn(`Skipping empty or short row at index ${i}:`, row); //
+                            continue; //
+                        }
+
+                        const rollNo = row[0]?.toString().trim(); //
+                        const gpa = row[row.length - 1]?.toString().trim(); //
+                        const subjectGrades = row.slice(1, -1); //
+
+                        // Debugging: Log student row data
+                        console.log(`\n--- Processing Row ${i + 1} for Student ---`); //
+                        console.log(`Student Roll No: '${rollNo}'`); //
+                        console.log(`Extracted GPA: '${gpa}'`); //
+                        console.log(`Subject Grades Array for this student:`, subjectGrades); //
+
+
+                        // Validate roll number
+                        if (!rollNo || rollNo.length !== 8 || isNaN(rollNo)) { //
+                            errorCount++; //
+                            console.warn(`Skipping row ${i + 1}: Invalid Roll Number '${rollNo}'.`); //
+                            continue; //
+                        }
+
+                        // Prepare subjects
+                        const subjects = {}; //
+                        let subjectIndex = 0; //
+                        let validSubjects = 0; //
+
+                        subjectCodeList.forEach((subjectCode, index) => { //
+                            const grade = subjectGrades[index]?.toString().trim(); //
+                            
+                            // Debugging: Log each subject's grade
+                            console.log(`  Subject ${index + 1} (${subjectCode}): Raw grade='${subjectGrades[index]}', Trimmed grade='${grade}' (Length: ${grade ? grade.length : 'N/A'})`); //
+
+                            if (grade && grade !== "") { //
+                                subjects[subjectIndex] = { //
+                                    subjectCode: subjectCode || "", //
+                                    subjectName: subjectNameList[index] || "", //
+                                    grade: grade //
+                                };
+                                subjectIndex++; //
+                                validSubjects++; //
+                                console.log(`    -> Added to subjects. Current validSubjects count: ${validSubjects}`); //
+                            } else {
+                                console.log(`    -> Grade for subject ${subjectCode} was empty or falsy, not added.`); //
+                            }
+                        });
+
+                        // Debugging: Final subjects for the current student
+                        console.log(`Final subjects object for ${rollNo}:`, subjects); //
+                        console.log(`Total valid subjects added for ${rollNo}: ${validSubjects}/${totalSubjectsInHeaders}`); //
+
+                        if (validSubjects === 0) { //
+                            errorCount++; //
+                            console.warn(`Skipping row ${i + 1} for Roll No ${rollNo}: No valid subjects found.`); //
+                            continue; //
+                        }
+
+                        // Prepare data for Firebase
+                        const resultData = { //
+                            gpa: gpa || "0.0", //
+                            subjects: subjects, //
+                            timestamp: new Date().toISOString() //
+                        };
+
+                        // Save to Firebase
+                        const ref = db.ref(`results/${rollNo}/${semester}`); //
+                        promises.push( //
+                            ref.set(resultData) //
+                                .then(() => { //
+                                    processedCount++; //
+                                    console.log(`Successfully saved results for Roll No: ${rollNo}`); //
+                                })
+                                .catch((error) => { //
+                                    console.error(`Error saving for roll no ${rollNo}:`, error); //
+                                    errorCount++; //
+                                })
+                        );
+                    }
+
+                    // Wait for all operations to complete
+                    Promise.allSettled(promises).then(() => { //
+                        const message = `Upload complete: ${processedCount} records processed, ${errorCount} errors`; //
+                        showMessageBox(message, errorCount === 0, 'excel-upload-message'); //
+                        excelFileInput.value = ''; //
+                        console.log("\n--- Excel Upload Process Finished ---"); //
+                    });
+                    
+                } catch (err) {
+                    console.error("Excel processing error:", err); //
+                    showMessageBox("An error occurred while processing the Excel file: " + err.message, false, 'excel-upload-message'); //
+                } finally {
+                    setLoading(false);
+                    setButtonLoading(uploadExcelBtn, false);
+                }
+            };
+            reader.onerror = () => {
+                showMessageBox('Failed to read file.', false, 'excel-upload-message'); //
+                setLoading(false); //
+                setButtonLoading(uploadExcelBtn, false); //
+            };
+            reader.readAsArrayBuffer(file); //
+        });
+
+        // Check for admin session
+        auth.onAuthStateChanged(async (user) => { //
+            if (user) { //
+                const adminRef = db.ref(`admins/${user.uid}`); //
+                const adminSnapshot = await adminRef.once('value'); //
+                if (adminSnapshot.exists()) { //
+                    adminLoginPage.style.display = 'none'; //
+                    adminDashboard.style.display = 'flex'; //
+                    adminUserIcon.textContent = user.email ? user.email.charAt(0).toUpperCase() : 'AD'; //
+                    adminDropdownEmail.textContent = user.email || 'Admin'; //
+                } else {
+                    await auth.signOut(); //
+                    adminLoginPage.style.display = 'flex'; //
+                    adminDashboard.style.display = 'none'; //
+                    showMessageBox('Access Denied: You are not an authorized admin.', false, 'admin-login-message'); //
+                }
+            } else {
+                adminLoginPage.style.display = 'flex'; //
+                adminDashboard.style.display = 'none'; //
+            }
+            setLoading(false); //
+        });
+    </script>
+</body>
+</html>
